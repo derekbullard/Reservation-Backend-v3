@@ -17,21 +17,6 @@ appointments = db.appointments
 # Index to expire reservations after 30 minutes
 appointments.create_index("date", expireAfterSeconds=1800)
 
-@app.route('/submit_availability', methods=['POST'])
-def submit_availability():
-    provider_id = request.json['provider_id']
-    date = request.json['date']
-    start_time = request.json['start_time']
-    end_time = request.json['end_time']
-
-    # Add availability to the provider's document
-    providers.update_one(
-        {"provider_id": provider_id},
-        {"$push": {"availability": {"date": date, "start_time": start_time, "end_time": end_time}}},
-        upsert=True
-    )
-    return jsonify({'status': 'Availability submitted'}), 200
-
 @app.route('/available_slots', methods=['GET'])
 def available_slots():
     provider_id = request.args.get('provider_id')
@@ -52,6 +37,20 @@ def available_slots():
         return jsonify(slots), 200
     return jsonify({'error': 'No availability found'}), 404
 
+@app.route('/submit_availability', methods=['POST'])
+def submit_availability():
+    provider_id = request.json['provider_id']
+    date = request.json['date']
+    start_time = request.json['start_time']
+    end_time = request.json['end_time']
+
+    # Add availability to the provider's document
+    providers.update_one(
+        {"provider_id": provider_id},
+        {"$push": {"availability": {"date": date, "start_time": start_time, "end_time": end_time}}},
+        upsert=True
+    )
+    return jsonify({'status': 'Availability submitted'}), 200
 
 @app.route('/reserve_slot', methods=['POST'])
 def reserve_slot():
